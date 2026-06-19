@@ -96,6 +96,15 @@ fun CadastroScreen(
             ) {
                 Text("Salvar")
             }
+
+            Button(
+                onClick ={
+                    onVoltar()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Text("Voltar")
+            }
         }
     }
 }

@@ -43,7 +43,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                Column(modifier = Modifier.padding(16.dp).alignment(Alignment.CenterHorizontally)) {
+                Column(modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally)) {
                     Text(text = "Saldo Atual", fontSize = 16.sp, color = Color.Gray)
                     Text(
                         text = String.format("R$ %.2f", saldo),
@@ -90,11 +90,6 @@ fun HomeScreen(
             }
         }
     }
-}
-// Alignment didn't work, so I used this...
-@SuppressLint("ModifierFactoryUnreferencedReceiver")
-private fun Modifier.alignment(centerHorizontally: Alignment.Horizontal): Modifier {
-    val todo = TODO("Not yet implemented")
 }
 
 @Composable
