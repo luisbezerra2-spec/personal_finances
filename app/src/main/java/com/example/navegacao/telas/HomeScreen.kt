@@ -18,6 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.navegacao.data.TipoTransacao
 import com.example.navegacao.data.Transacao
+import androidx.compose.material.icons.filled.Fastfood
+import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.HelpCenter
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,8 +97,17 @@ fun HomeScreen(
     }
 }
 
+// Adding 'coil icons' to the 'historic' (according to each category)
 @Composable
 fun ItemTransacao(transacao: Transacao, onDelete: () -> Unit) {
+    // Map categories to appropriate icons
+    val iconeCategoria = when (transacao.categoria) {
+        "Alimentação" -> Icons.Default.Fastfood
+        "Lazer" -> Icons.Default.ConfirmationNumber
+        "Transporte" -> Icons.Default.DirectionsCar
+        else -> Icons.Default.HelpCenter
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -103,23 +117,36 @@ fun ItemTransacao(transacao: Transacao, onDelete: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(text = transacao.descricao, fontWeight = FontWeight.Bold)
-                Text(text = transacao.categoria, fontSize = 12.sp, color = Color.Gray)
-            }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val corValor = if (transacao.tipo == TipoTransacao.RECEITA) Color(0xFF2E7D32) else Color(0xFFC62828)
-                val sinal = if (transacao.tipo == TipoTransacao.RECEITA) "+" else "-"
-
-                Text(
-                    text = "$sinal R$ ${String.format("%.2f", transacao.valor)}",
-                    color = corValor,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Excluir", tint = Color.Gray)
+                // Visual Indicator: Icon with a soft background circle
+                Surface(
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = iconeCategoria,
+                        contentDescription = transacao.categoria,
+                        modifier = Modifier.padding(8.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column {
+                    Text(text = transacao.descricao, fontWeight = FontWeight.Bold)
+                    Text(text = transacao.categoria, fontSize = 12.sp, color = Color.Gray)
+                    Text(
+                        text = "$${transacao.valor}",
+                        fontSize = 12.sp,
+                        color = Color.DarkGray
+                    )
+                }
+            }
+
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Excluir", tint = Color.Gray)
             }
         }
     }
