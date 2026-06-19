@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.navegacao.data.AppDatabase
 import com.example.navegacao.navigation.SetupNavigation
-import com.example.navegacao.telas.ProdutoViewModel
+import com.example.navegacao.telas.FinancasViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val database = AppDatabase.getDatabase(applicationContext)
-        val viewModel = ProdutoViewModel(database.produtoDao())
+        val viewModel = FinancasViewModel(database.produtoDao())
 
         setContent {
             SetupNavigation(viewModel = viewModel)

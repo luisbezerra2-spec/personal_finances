@@ -1,0 +1,131 @@
+package com.example.navegacao.telas
+
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.navegacao.data.TipoTransacao
+import com.example.navegacao.data.Transacao
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreen(
+    viewModel: FinancasViewModel,
+    onNavegarParaCadastro: (String) -> Unit
+) {
+    val transacoes by viewModel.transacoes.collectAsState()
+    val saldo by viewModel.saldo.collectAsState()
+
+    Scaffold(
+        topBar = { TopAppBar(title = { Text("Minhas Finanças") }) }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Card de Saldo
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp).alignment(Alignment.CenterHorizontally)) {
+                    Text(text = "Saldo Atual", fontSize = 16.sp, color = Color.Gray)
+                    Text(
+                        text = String.format("R$ %.2f", saldo),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (saldo >= 0) Color(0xFF2E7D32) else Color(0xFFC62828)
+                    )
+                }
+            }
+
+            // Botões de Ação
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    onClick = { onNavegarParaCadastro("RECEITA") },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                    modifier = Modifier.weight(1f).padding(end = 8.dp)
+                ) {
+                    Text("+ Receita")
+                }
+                Button(
+                    onClick = { onNavegarParaCadastro("DESPESA") },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828)),
+                    modifier = Modifier.weight(1f).padding(start = 8.dp)
+                ) {
+                    Text("- Despesa")
+                }
+            }
+
+            // Histórico Financeiro
+            Text(
+                text = "Histórico Lançamentos",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            )
+
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                items(transacoes) { transacao ->
+                    ItemTransacao(transacao = transacao, onDelete = { viewModel.excluirTransacao(transacao) })
+                }
+            }
+        }
+    }
+}
+// Alignment didn't work, so I used this...
+@SuppressLint("ModifierFactoryUnreferencedReceiver")
+private fun Modifier.alignment(centerHorizontally: Alignment.Horizontal): Modifier {
+    val todo = TODO("Not yet implemented")
+}
+
+@Composable
+fun ItemTransacao(transacao: Transacao, onDelete: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(text = transacao.descricao, fontWeight = FontWeight.Bold)
+                Text(text = transacao.categoria, fontSize = 12.sp, color = Color.Gray)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val corValor = if (transacao.tipo == TipoTransacao.RECEITA) Color(0xFF2E7D32) else Color(0xFFC62828)
+                val sinal = if (transacao.tipo == TipoTransacao.RECEITA) "+" else "-"
+
+                Text(
+                    text = "$sinal R$ ${String.format("%.2f", transacao.valor)}",
+                    color = corValor,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = "Excluir", tint = Color.Gray)
+                }
+            }
+        }
+    }
+}
