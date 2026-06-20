@@ -16,4 +16,7 @@ interface TransacaoDao {
 
     @Update
     suspend fun atualizar(transacao: Transacao)
+
+    @Query("SELECT * FROM transacoes WHERE id = :id")
+    suspend fun buscarPorId(id: Long): Transacao?
 }

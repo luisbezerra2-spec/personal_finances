@@ -39,4 +39,17 @@ class FinancasViewModel(application: Application) : AndroidViewModel(application
             dao.excluir(transacao)
         }
     }
+
+    fun atualizarTransacao(id: Long, descricao: String, valor: Double, tipo: TipoTransacao, categoria: String) {
+        viewModelScope.launch {
+            dao.atualizar(
+                Transacao(id = id, descricao = descricao, valor = valor, tipo = tipo, categoria = categoria)
+            )
+        }
+    }
+
+    // Helper to fetch a transaction if we need to pre-fill the screen
+    suspend fun buscarPorId(id: Long): Transacao? {
+        return dao.buscarPorId(id)
+    }
 }

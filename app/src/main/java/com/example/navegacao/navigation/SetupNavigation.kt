@@ -19,14 +19,22 @@ fun SetupNavigation() {
             HomeScreen(
                 viewModel = viewModel,
                 onNavegarParaCadastro = { tipo ->
-                    navController.navigate("cadastro/$tipo")
+                    navController.navigate("cadastro/$tipo/-1")
+                },
+                onNavegarParaEditar = { transacao ->
+                    navController.navigate("cadastro/${transacao.tipo.name}/${transacao.id}")
                 }
             )
         }
-        composable("cadastro/{tipo}") { backStackEntry ->
+
+        // criar e editar
+        composable("cadastro/{tipo}/{transacaoId}") { backStackEntry ->
             val tipo = backStackEntry.arguments?.getString("tipo") ?: "RECEITA"
+            val transacaoId = backStackEntry.arguments?.getString("transacaoId")?.toLongOrNull() ?: -1L
+
             CadastroScreen(
                 tipo = tipo,
+                transacaoId = transacaoId,
                 viewModel = viewModel,
                 onVoltar = { navController.popBackStack() }
             )

@@ -16,6 +16,7 @@ import com.example.navegacao.data.TipoTransacao
 @Composable
 fun CadastroScreen(
     tipo: String,
+    transacaoId: Long,
     viewModel: FinancasViewModel,
     onVoltar: () -> Unit
 ) {
@@ -27,8 +28,23 @@ fun CadastroScreen(
     val categorias = listOf("Alimentação", "Lazer", "Transporte", "Outro")
     val tipoEnum = if (tipo == "RECEITA") TipoTransacao.RECEITA else TipoTransacao.DESPESA
 
+    // Define o título da tela baseado na ação (Adicionar ou Editar)
+    val tituloTela = if (transacaoId == -1L) "Adicionar $tipo" else "Editar $tipo"
+
+    // Disparado ao abrir a tela: se transacaoId for válido (diferente de -1), busca no banco e preenche os campos
+    LaunchedEffect(transacaoId) {
+        if (transacaoId != -1L) {
+            val transacao = viewModel.buscarPorId(transacaoId)
+            if (transacao != null) {
+                descricao = transacao.descricao
+                valorStr = transacao.valor.toString()
+                categoriaSelecionada = transacao.categoria
+            }
+        }
+    }
+
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Adicionar $tipo") }) }
+        topBar = { TopAppBar(title = { Text(tituloTela) }) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -52,7 +68,7 @@ fun CadastroScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Spinner/Dropdown de Categorias
+            // Categorias
             Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = categoriaSelecionada,
@@ -84,25 +100,31 @@ fun CadastroScreen(
                 }
             }
 
+            // Botão Principal de Ação (Salvar ou Atualizar)
             Button(
                 onClick = {
                     val valor = valorStr.toDoubleOrNull() ?: 0.0
                     if (descricao.isNotBlank() && valor > 0.0) {
-                        viewModel.salvarTransacao(descricao, valor, tipoEnum, categoriaSelecionada)
+                        if (transacaoId == -1L) {
+                            // Cria um novo registro se o ID for -1
+                            viewModel.salvarTransacao(descricao, valor, tipoEnum, categoriaSelecionada)
+                        } else {
+                            // Atualiza o existente se já possuir um ID válido
+                            viewModel.atualizarTransacao(transacaoId, descricao, valor, tipoEnum, categoriaSelecionada)
+                        }
                         onVoltar()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Salvar")
+                Text(if (transacaoId == -1L) "Salvar" else "Atualizar Alterações")
             }
 
-            Button(
-                onClick ={
-                    onVoltar()
-                },
+            // Botão Voltar (Cancela a operação atual)
+            OutlinedButton(
+                onClick = { onVoltar() },
                 modifier = Modifier.fillMaxWidth()
-            ){
+            ) {
                 Text("Voltar")
             }
         }

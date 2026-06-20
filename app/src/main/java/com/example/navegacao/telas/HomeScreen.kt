@@ -1,6 +1,6 @@
 package com.example.navegacao.telas
 
-import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,19 +16,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.navegacao.data.TipoTransacao
 import com.example.navegacao.data.Transacao
 import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.HelpCenter
-
+import com.example.navegacao.data.TipoTransacao
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: FinancasViewModel,
-    onNavegarParaCadastro: (String) -> Unit
+    onNavegarParaCadastro: (String) -> Unit,
+    onNavegarParaEditar: (Transacao) -> Unit
 ) {
     val transacoes by viewModel.transacoes.collectAsState()
     val saldo by viewModel.saldo.collectAsState()
@@ -90,16 +90,24 @@ fun HomeScreen(
 
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 items(transacoes) { transacao ->
-                    ItemTransacao(transacao = transacao, onDelete = { viewModel.excluirTransacao(transacao) })
+                    ItemTransacao(
+                        transacao = transacao,
+                        onDelete = { viewModel.excluirTransacao(transacao) },
+                        // Conexão 1: Passa a função de clique do histórico da lista para a rota de edição
+                        onEditarClick = { onNavegarParaEditar(transacao) }
+                    )
                 }
             }
         }
     }
 }
 
-// Adding 'coil icons' to the 'historic' (according to each category)
 @Composable
-fun ItemTransacao(transacao: Transacao, onDelete: () -> Unit) {
+fun ItemTransacao(
+    transacao: Transacao,
+    onDelete: () -> Unit,
+    onEditarClick: () -> Unit // Novo parâmetro recebido
+) {
     // Map categories to appropriate icons
     val iconeCategoria = when (transacao.categoria) {
         "Alimentação" -> Icons.Default.Fastfood
@@ -109,7 +117,11 @@ fun ItemTransacao(transacao: Transacao, onDelete: () -> Unit) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        // Conexão 2: Adiciona o Modifier.clickable para capturar o toque no card inteiro
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable { onEditarClick() },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
@@ -137,10 +149,15 @@ fun ItemTransacao(transacao: Transacao, onDelete: () -> Unit) {
                 Column {
                     Text(text = transacao.descricao, fontWeight = FontWeight.Bold)
                     Text(text = transacao.categoria, fontSize = 12.sp, color = Color.Gray)
+
+                    // Ajuste de legibilidade de cores conforme o requisito da atividade (verde/vermelho)
+                    val corTexto = if (transacao.tipo == TipoTransacao.RECEITA) Color(0xFF2E7D32) else Color(0xFFC62828)
+                    val sinal = if (transacao.tipo == TipoTransacao.RECEITA) "+" else "-"
                     Text(
-                        text = "$${transacao.valor}",
-                        fontSize = 12.sp,
-                        color = Color.DarkGray
+                        text = "$sinal R$ ${String.format("%.2f", transacao.valor)}",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = corTexto
                     )
                 }
             }
